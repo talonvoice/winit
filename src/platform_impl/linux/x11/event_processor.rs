@@ -562,7 +562,7 @@ impl<T: 'static> EventProcessor<T> {
 
                 // Since all XIM stuff needs to happen from the same thread, we destroy the input
                 // context here instead of when dropping the window.
-                wt.ime
+                let _ = wt.ime
                     .borrow_mut()
                     .remove_context(window as ffi::Window)
                     .expect("Failed to destroy input context");
