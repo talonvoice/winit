@@ -8,6 +8,8 @@ And please only add new entries to the top of this list, right below the `# Unre
 
 # Unreleased
 
+- On X11, fix an IME panic on window close.
+
 # 0.28.2
 
 - Implement `HasRawDisplayHandle` for `EventLoop`.
