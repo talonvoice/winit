@@ -1309,8 +1309,14 @@ where
         None => fallback_parent(),
     };
 
+
     #[cfg(not(feature = "rwh_06"))]
     let parent = fallback_parent();
+
+    if pl_attribs.tool_window {
+        window_flags.set(WindowFlags::TOOL, true);
+        window_flags.set(WindowFlags::ON_TASKBAR, false);
+    }
 
     let mut initdata = InitData {
         event_loop,

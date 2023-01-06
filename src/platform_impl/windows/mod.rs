@@ -32,6 +32,7 @@ pub struct PlatformSpecificWindowBuilderAttributes {
     pub skip_taskbar: bool,
     pub class_name: String,
     pub decoration_shadow: bool,
+    pub tool_window: bool,
 }
 
 impl Default for PlatformSpecificWindowBuilderAttributes {
@@ -45,6 +46,7 @@ impl Default for PlatformSpecificWindowBuilderAttributes {
             skip_taskbar: false,
             class_name: "Window Class".to_string(),
             decoration_shadow: false,
+            tool_window: false,
         }
     }
 }
