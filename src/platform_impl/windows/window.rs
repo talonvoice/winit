@@ -1330,6 +1330,11 @@ unsafe fn init(
     window_flags.set(WindowFlags::CLOSABLE, true);
     window_flags.set(WindowFlags::CLIP_CHILDREN, attributes.platform_specific.clip_children);
 
+    if attributes.platform_specific.tool_window {
+        window_flags.set(WindowFlags::TOOL, true);
+        window_flags.set(WindowFlags::ON_TASKBAR, false);
+    }
+
     let mut fallback_parent = || match attributes.platform_specific.owner {
         Some(parent) => {
             window_flags.set(WindowFlags::POPUP, true);
