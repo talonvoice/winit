@@ -17,7 +17,7 @@ use windows_sys::Win32::{
         SW_HIDE, SW_MAXIMIZE, SW_MINIMIZE, SW_RESTORE, SW_SHOW, WINDOWPLACEMENT, WINDOW_EX_STYLE,
         WINDOW_STYLE, WS_BORDER, WS_CAPTION, WS_CHILD, WS_CLIPCHILDREN, WS_CLIPSIBLINGS,
         WS_EX_ACCEPTFILES, WS_EX_APPWINDOW, WS_EX_LAYERED, WS_EX_NOREDIRECTIONBITMAP,
-        WS_EX_TOPMOST, WS_EX_TRANSPARENT, WS_EX_WINDOWEDGE, WS_MAXIMIZE, WS_MAXIMIZEBOX,
+        WS_EX_TOOLWINDOW, WS_EX_TOPMOST, WS_EX_TRANSPARENT, WS_EX_WINDOWEDGE, WS_MAXIMIZE, WS_MAXIMIZEBOX,
         WS_MINIMIZE, WS_MINIMIZEBOX, WS_OVERLAPPEDWINDOW, WS_POPUP, WS_SIZEBOX, WS_SYSMENU,
         WS_VISIBLE,
     },
@@ -85,6 +85,7 @@ bitflags! {
         const CHILD          = 1 << 6;
         const MAXIMIZED      = 1 << 7;
         const POPUP          = 1 << 8;
+        const TOOL           = 1 << 17;
 
         /// Marker flag for fullscreen. Should always match `WindowState::fullscreen`, but is
         /// included here to make masking easier.
@@ -265,6 +266,9 @@ impl WindowFlags {
         }
         if self.contains(WindowFlags::POPUP) {
             style |= WS_POPUP;
+        }
+        if self.contains(WindowFlags::TOOL) {
+            style_ex |= WS_EX_TOOLWINDOW;
         }
         if self.contains(WindowFlags::MINIMIZED) {
             style |= WS_MINIMIZE;

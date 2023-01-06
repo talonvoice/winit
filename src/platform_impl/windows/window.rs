@@ -973,6 +973,10 @@ where
         }
     };
 
+    if pl_attribs.tool_window {
+        window_flags.set(WindowFlags::TOOL, true);
+    }
+
     let mut initdata = InitData {
         event_loop,
         attributes,

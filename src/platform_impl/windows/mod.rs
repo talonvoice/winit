@@ -37,6 +37,7 @@ pub struct PlatformSpecificWindowBuilderAttributes {
     pub preferred_theme: Option<Theme>,
     pub skip_taskbar: bool,
     pub decoration_shadow: bool,
+    pub tool_window: bool,
 }
 
 impl Default for PlatformSpecificWindowBuilderAttributes {
@@ -50,6 +51,7 @@ impl Default for PlatformSpecificWindowBuilderAttributes {
             preferred_theme: None,
             skip_taskbar: false,
             decoration_shadow: false,
+            tool_window: false,
         }
     }
 }
