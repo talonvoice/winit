@@ -15,6 +15,7 @@ pub struct XConnection {
     /// Exposes XRandR functions from version = 1.5
     pub xrandr_1_5: Option<ffi::Xrandr>,
     pub xcursor: ffi::Xcursor,
+    pub xfixes: ffi::Xfixes,
     pub xinput2: ffi::XInput2,
     pub xlib_xcb: ffi::Xlib_xcb,
     pub xrender: ffi::Xrender,
@@ -35,6 +36,7 @@ impl XConnection {
         // opening the libraries
         let xlib = ffi::Xlib::open()?;
         let xcursor = ffi::Xcursor::open()?;
+        let xfixes = ffi::Xfixes::open()?;
         let xrandr = ffi::Xrandr_2_2_0::open()?;
         let xrandr_1_5 = ffi::Xrandr::open().ok();
         let xinput2 = ffi::XInput2::open()?;
@@ -61,6 +63,7 @@ impl XConnection {
             xrandr,
             xrandr_1_5,
             xcursor,
+            xfixes,
             xinput2,
             xlib_xcb,
             xrender,
