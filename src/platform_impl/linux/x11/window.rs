@@ -1449,8 +1449,21 @@ impl UnownedWindow {
     }
 
     #[inline]
-    pub fn set_cursor_hittest(&self, _hittest: bool) -> Result<(), ExternalError> {
-        Err(ExternalError::NotSupported(NotSupportedError::new()))
+    pub fn set_cursor_hittest(&self, hittest: bool) -> Result<(), ExternalError> {
+        let shape_input = 2;
+        let mut rectangles: Vec<ffi::XRectangle> = Vec::new();
+        if hittest {
+            let size = self.inner_size();
+            rectangles.push(ffi::XRectangle{ x: 0, y: 0, width: size.width as u16, height: size.height as u16 })
+        }
+        unsafe {
+            let region = (self.xconn.xfixes.XFixesCreateRegion)(self.xconn.display, rectangles.as_mut_ptr(), rectangles.len() as i32);
+            (self.xconn.xfixes.XFixesSetWindowShapeRegion)(self.xconn.display, self.xwindow, shape_input, 0, 0, region);
+            (self.xconn.xfixes.XFixesDestroyRegion)(self.xconn.display, region);
+            self.xconn
+                .flush_requests()
+                .map_err(|e| ExternalError::Os(os_error!(OsError::XError(e))))
+        }
     }
 
     /// Moves the window while it is being dragged.
