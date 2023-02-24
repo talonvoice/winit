@@ -257,43 +257,58 @@ impl<T: 'static> EventLoop<T> {
 
         let runner = &self.window_target.p.runner_shared;
 
+        let mut shutting_down = false;
         let exit_code = unsafe {
             let mut msg = mem::zeroed();
 
             runner.poll();
             'main: loop {
+                if shutting_down { println!("winit shutting down 1"); }
                 if GetMessageW(&mut msg, 0, 0, 0) == false.into() {
                     break 'main 0;
                 }
+                if shutting_down { println!("winit shutting down 2"); }
 
                 let handled = if let Some(callback) = self.msg_hook.as_deref_mut() {
                     callback(&mut msg as *mut _ as *mut _)
                 } else {
                     false
                 };
+                if shutting_down { println!("winit shutting down 3"); }
                 if !handled {
                     TranslateMessage(&msg);
                     DispatchMessageW(&msg);
                 }
+                if shutting_down { println!("winit shutting down 4"); }
 
                 if let Err(payload) = runner.take_panic_error() {
+                    if shutting_down { println!("winit shutting down panic {:?}", payload); }
                     runner.reset_runner();
                     panic::resume_unwind(payload);
                 }
+                if shutting_down { println!("winit shutting down 5"); }
 
                 if let ControlFlow::ExitWithCode(code) = runner.control_flow() {
+                    shutting_down = true;
+                    println!("winit exit code {}", code);
                     if !runner.handling_events() {
+                        println!("not handling events");
                         break 'main code;
+                    } else {
+                        println!("still handling events");
                     }
                 }
             }
         };
+        println!("winit exit 1");
 
         unsafe {
             runner.loop_destroyed();
         }
+        println!("winit exit 2");
 
         runner.reset_runner();
+        println!("winit exit 3");
         exit_code
     }
 
