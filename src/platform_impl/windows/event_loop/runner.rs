@@ -138,7 +138,11 @@ impl<T> EventLoopRunner<T> {
     }
 
     pub fn handling_events(&self) -> bool {
-        self.runner_state.get() != RunnerState::Idle
+        let value = self.runner_state.get() != RunnerState::Idle;
+        if value {
+            println!("handling_events: {:?}", value);
+        }
+        value
     }
 
     pub fn should_buffer(&self) -> bool {
@@ -296,6 +300,7 @@ impl<T> EventLoopRunner<T> {
         use RunnerState::{
             Destroyed, HandlingMainEvents, HandlingRedrawEvents, Idle, Uninitialized,
         };
+        println!("move_state from={:?} to={:?}", self.runner_state, new_runner_state);
 
         match (
             self.runner_state.replace(new_runner_state),
