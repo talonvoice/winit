@@ -268,6 +268,7 @@ impl<T: 'static> EventLoop<T> {
                     break 'main 0;
                 }
                 if shutting_down { println!("winit shutting down 2"); }
+                println!("GetMessageW: {:?}", msg);
 
                 let handled = if let Some(callback) = self.msg_hook.as_deref_mut() {
                     callback(&mut msg as *mut _ as *mut _)
