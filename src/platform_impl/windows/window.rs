@@ -1031,7 +1031,6 @@ unsafe fn register_window_class<T: 'static>(
         .map(|icon| icon.inner.as_raw_handle())
         .unwrap_or(0);
 
-    use windows_sys::Win32::UI::WindowsAndMessaging::COLOR_WINDOWFRAME;
     let class = WNDCLASSEXW {
         cbSize: mem::size_of::<WNDCLASSEXW>() as u32,
         style: CS_HREDRAW | CS_VREDRAW,
@@ -1041,7 +1040,7 @@ unsafe fn register_window_class<T: 'static>(
         hInstance: util::get_instance_handle(),
         hIcon: h_icon,
         hCursor: 0, // must be null in order for cursor state to work properly
-        hbrBackground: COLOR_WINDOWFRAME as _,
+        hbrBackground: 0,
         lpszMenuName: ptr::null(),
         lpszClassName: class_name.as_ptr(),
         hIconSm: h_icon_small,
