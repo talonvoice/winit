@@ -268,6 +268,7 @@ impl WindowFlags {
             style |= WS_POPUP;
         }
         if self.contains(WindowFlags::TOOL) {
+            style &= !WS_OVERLAPPEDWINDOW;
             style_ex |= WS_EX_TOOLWINDOW;
         }
         if self.contains(WindowFlags::MINIMIZED) {
