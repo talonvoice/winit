@@ -539,6 +539,15 @@ impl WinitWindow {
         Some(self.isVisible())
     }
 
+    pub fn set_focusable(&self, focusable: bool) {
+        warn!("`Window::set_focusable` is ignored on macOS");
+    }
+
+    pub fn is_focusable(&self) -> Option<bool> {
+        warn!("`Window::is_focusable` is ignored on macOS");
+        None
+    }
+
     pub fn request_redraw(&self) {
         AppState::queue_redraw(RootWindowId(self.id()));
     }

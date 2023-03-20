@@ -252,6 +252,15 @@ impl Window {
         None
     }
 
+    pub fn set_focusable(&self, focusable: bool) {
+        warn!("`Window::set_focusable` is ignored on Orbital");
+    }
+
+    pub fn is_focusable(&self) -> Option<bool> {
+        warn!("`Window::is_focusable` is ignored on Orbital");
+        None
+    }
+
     #[inline]
     pub fn resize_increments(&self) -> Option<PhysicalSize<u32>> {
         None

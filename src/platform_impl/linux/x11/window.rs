@@ -1043,6 +1043,15 @@ impl UnownedWindow {
         Some(self.shared_state_lock().visibility == Visibility::Yes)
     }
 
+    pub fn set_focusable(&self, focusable: bool) {
+        warn!("`Window::set_focusable` is ignored on X11");
+    }
+
+    pub fn is_focusable(&self) -> Option<bool> {
+        warn!("`Window::is_focusable` is ignored on X11");
+        None
+    }
+
     fn update_cached_frame_extents(&self) {
         let extents = self
             .xconn

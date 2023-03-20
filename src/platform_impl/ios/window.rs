@@ -57,6 +57,15 @@ impl Inner {
         None
     }
 
+    pub fn set_focusable(&self, focusable: bool) {
+        warn!("`Window::set_focusable` is ignored on iOS");
+    }
+
+    pub fn is_focusable(&self) -> Option<bool> {
+        warn!("`Window::is_focusable` is ignored on iOS");
+        None
+    }
+
     pub fn request_redraw(&self) {
         unsafe {
             if self.gl_or_metal_backed {

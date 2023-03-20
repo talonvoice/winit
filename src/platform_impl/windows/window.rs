@@ -131,6 +131,22 @@ impl Window {
         Some(unsafe { IsWindowVisible(self.window.0) == 1 })
     }
 
+    pub fn set_focusable(&self, focusable: bool) {
+        let window = self.window.clone();
+        let window_state = Arc::clone(&self.window_state);
+        self.thread_executor.execute_in_thread(move || {
+            let _ = &window;
+            WindowState::set_window_flags(window_state.lock().unwrap(), window.0, |f| {
+                f.set(WindowFlags::FOCUSABLE, focusable)
+            });
+        });
+    }
+
+    pub fn is_focusable(&self) -> Option<bool> {
+        let window_flags = self.window_state_lock().window_flags;
+        Some(window_flags.contains(WindowFlags::FOCUSABLE))
+    }
+
     #[inline]
     pub fn request_redraw(&self) {
         unsafe {
@@ -1062,6 +1078,7 @@ where
     let class_name = register_window_class::<T>();
 
     let mut window_flags = WindowFlags::empty();
+    window_flags.set(WindowFlags::FOCUSABLE, attributes.focusable);
     window_flags.set(WindowFlags::MARKER_DECORATIONS, attributes.decorations);
     window_flags.set(
         WindowFlags::MARKER_UNDECORATED_SHADOW,
