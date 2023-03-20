@@ -102,6 +102,15 @@ impl Inner {
         None
     }
 
+    pub fn set_focusable(&self, focusable: bool) {
+        warn!("`Window::set_focusable` is ignored on Web");
+    }
+
+    pub fn is_focusable(&self) -> Option<bool> {
+        warn!("`Window::is_focusable` is ignored on Web");
+        None
+    }
+
     pub fn request_redraw(&self) {
         self.canvas.borrow().request_animation_frame();
     }

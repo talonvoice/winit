@@ -155,6 +155,7 @@ pub struct WindowAttributes {
     #[cfg(feature = "rwh_06")]
     pub(crate) parent_window: SendSyncWrapper<Option<rwh_06::RawWindowHandle>>,
     pub(crate) fullscreen: SendSyncWrapper<Option<Fullscreen>>,
+    pub focusable: bool,
 }
 
 impl Default for WindowAttributes {
@@ -182,6 +183,7 @@ impl Default for WindowAttributes {
             #[cfg(feature = "rwh_06")]
             parent_window: SendSyncWrapper(None),
             active: true,
+            focusable: true,
         }
     }
 }
@@ -339,6 +341,17 @@ impl WindowBuilder {
     #[inline]
     pub fn with_visible(mut self, visible: bool) -> Self {
         self.window.visible = visible;
+        self
+    }
+
+    /// Whether the window can be focused or not.
+    ///
+    /// The default is `true`.
+    ///
+    /// See [`Window::set_focusable`] for details.
+    #[inline]
+    pub fn with_focusable(mut self, focusable: bool) -> Self {
+        self.window.focusable = focusable;
         self
     }
 
@@ -953,6 +966,24 @@ impl Window {
     #[inline]
     pub fn is_visible(&self) -> Option<bool> {
         self.window.maybe_wait_on_main(|w| w.is_visible())
+    }
+
+    /// Sets whether the window can be focused or not.
+    ///
+    /// The default is `true`.
+    ///
+    /// - **Windows:** Supported.
+    #[inline]
+    pub fn set_focusable(&self, focusable: bool) {
+        self.window.set_focusable(focusable);
+    }
+
+    /// Gets whether the window can be focused or not.
+    ///
+    /// - **Windows:** Supported.
+    #[inline]
+    pub fn is_focusable(&self) -> Option<bool> {
+        self.window.is_focusable()
     }
 
     /// Sets whether the window is resizable or not.
