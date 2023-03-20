@@ -120,6 +120,7 @@ pub struct WindowAttributes {
     pub content_protected: bool,
     pub window_level: WindowLevel,
     pub active: bool,
+    pub focusable: bool,
     pub cursor: Cursor,
     #[cfg(feature = "rwh_06")]
     pub(crate) parent_window: Option<SendSyncRawWindowHandle>,
@@ -155,6 +156,7 @@ impl Default for WindowAttributes {
             #[cfg(feature = "rwh_06")]
             parent_window: None,
             active: true,
+            focusable: true,
             platform_specific: Default::default(),
         }
     }
@@ -313,6 +315,17 @@ impl WindowAttributes {
     #[inline]
     pub fn with_visible(mut self, visible: bool) -> Self {
         self.visible = visible;
+        self
+    }
+
+    /// Whether the window can be focused or not.
+    ///
+    /// The default is `true`.
+    ///
+    /// See [`Window::set_focusable`] for details.
+    #[inline]
+    pub fn with_focusable(mut self, focusable: bool) -> Self {
+        self.focusable = focusable;
         self
     }
 
@@ -989,6 +1002,24 @@ impl Window {
     pub fn is_visible(&self) -> Option<bool> {
         let _span = tracing::debug_span!("winit::Window::is_visible",).entered();
         self.window.maybe_wait_on_main(|w| w.is_visible())
+    }
+
+    /// Sets whether the window can be focused or not.
+    ///
+    /// The default is `true`.
+    ///
+    /// - **Windows:** Supported.
+    #[inline]
+    pub fn set_focusable(&self, focusable: bool) {
+        self.window.set_focusable(focusable);
+    }
+
+    /// Gets whether the window can be focused or not.
+    ///
+    /// - **Windows:** Supported.
+    #[inline]
+    pub fn is_focusable(&self) -> Option<bool> {
+        self.window.is_focusable()
     }
 
     /// Sets whether the window is resizable or not.
