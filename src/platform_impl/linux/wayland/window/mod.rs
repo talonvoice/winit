@@ -261,6 +261,13 @@ impl Window {
         None
     }
 
+    pub fn set_focusable(&self, focusable: bool) {
+    }
+
+    pub fn is_focusable(&self) -> Option<bool> {
+        None
+    }
+
     #[inline]
     pub fn outer_position(&self) -> Result<PhysicalPosition<i32>, NotSupportedError> {
         Err(NotSupportedError::new())
