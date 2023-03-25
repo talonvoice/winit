@@ -181,6 +181,15 @@ pub(crate) fn make_key_and_order_front_sync(window: &NSWindow) {
     });
 }
 
+// `orderFront::` isn't thread-safe. Calling it from another thread
+// actually works, but with an odd delay.
+pub(crate) fn order_front_sync(window: &NSWindow) {
+    let window = MainThreadSafe(window);
+    run_on_main(move || {
+        window.orderFront(None);
+    });
+}
+
 // `setTitle:` isn't thread-safe. Calling it from another thread invalidates the
 // window drag regions, which throws an exception when not done in the main
 // thread

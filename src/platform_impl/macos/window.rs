@@ -149,6 +149,7 @@ pub struct SharedState {
     // Set target_fullscreen and do after fullscreen transition is end.
     pub(crate) target_fullscreen: Option<Option<Fullscreen>>,
     pub maximized: bool,
+    pub focusable: bool,
     pub standard_frame: Option<NSRect>,
     pub(crate) is_simple_fullscreen: bool,
     pub saved_style: Option<NSWindowStyleMask>,
@@ -321,6 +322,7 @@ impl WinitWindow {
                 let state = SharedState {
                     resizable: attrs.resizable,
                     maximized: attrs.maximized,
+                    focusable: attrs.focusable,
                     resize_increments,
                     ..Default::default()
                 };
@@ -477,7 +479,7 @@ impl WinitWindow {
         // state, since otherwise we'll briefly see the window at normal size
         // before it transitions.
         if attrs.visible {
-            if attrs.active {
+            if attrs.active && attrs.focusable {
                 // Tightly linked with `app_state::window_activation_hack`
                 this.makeKeyAndOrderFront(None);
             } else {
@@ -528,9 +530,14 @@ impl WinitWindow {
     }
 
     pub fn set_visible(&self, visible: bool) {
-        match visible {
-            true => util::make_key_and_order_front_sync(self),
-            false => util::order_out_sync(self),
+        if visible {
+            if self.is_focusable() == Some(true) {
+                util::make_key_and_order_front_sync(self);
+            } else {
+                util::order_front_sync(self);
+            }
+        } else {
+            util::order_out_sync(self);
         }
     }
 
@@ -540,12 +547,13 @@ impl WinitWindow {
     }
 
     pub fn set_focusable(&self, focusable: bool) {
-        warn!("`Window::set_focusable` is ignored on macOS");
+        let mut shared_state_lock = self.lock_shared_state("set_focusable");
+        shared_state_lock.focusable = focusable;
     }
 
     pub fn is_focusable(&self) -> Option<bool> {
-        warn!("`Window::is_focusable` is ignored on macOS");
-        None
+        let shared_state_lock = self.lock_shared_state("is_focusable");
+        Some(shared_state_lock.focusable)
     }
 
     pub fn request_redraw(&self) {
