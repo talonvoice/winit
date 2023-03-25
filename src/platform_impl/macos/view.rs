@@ -83,6 +83,9 @@ pub(super) struct ViewState {
     /// True if the current key event should be forwarded
     /// to the application, even during IME
     forward_key_to_app: bool,
+
+    /// True if window can be focused by click
+    focusable: bool,
 }
 
 fn get_characters(event: &NSEvent, ignore_modifiers: bool) -> String {
@@ -150,11 +153,12 @@ declare_class!(
     }
 
     unsafe impl WinitView {
-        #[sel(initWithId:acceptsFirstMouse:)]
+        #[sel(initWithId:acceptsFirstMouse:focusable:)]
         fn init_with_id(
             &mut self,
             window: &WinitWindow,
             accepts_first_mouse: bool,
+            focusable: bool,
         ) -> Option<&mut Self> {
             let this: Option<&mut Self> = unsafe { msg_send![super(self), init] };
             this.map(|this| {
@@ -167,6 +171,7 @@ declare_class!(
                     input_source: String::new(),
                     ime_allowed: false,
                     forward_key_to_app: false,
+                    focusable,
                 };
 
                 Ivar::write(
@@ -863,16 +868,23 @@ declare_class!(
             trace_scope!("acceptsFirstMouse:");
             *self.accepts_first_mouse
         }
+
+        #[sel(shouldDelayWindowOrderingForEvent:)]
+        fn should_delay_window_ordering_for_event(&self, _event: &NSEvent) -> bool {
+            trace_scope!("shouldDelayWindowOrderingForEvent:");
+            !self.state.focusable
+        }
     }
 );
 
 impl WinitView {
-    pub(super) fn new(window: &WinitWindow, accepts_first_mouse: bool) -> Id<Self, Shared> {
+    pub(super) fn new(window: &WinitWindow, accepts_first_mouse: bool, focusable: bool) -> Id<Self, Shared> {
         unsafe {
             msg_send_id![
                 msg_send_id![Self::class(), alloc],
                 initWithId: window,
                 acceptsFirstMouse: accepts_first_mouse,
+                focusable: focusable,
             ]
         }
     }
@@ -946,6 +958,10 @@ impl WinitView {
         input_context.invalidateCharacterCoordinates();
     }
 
+    pub(super) fn set_focusable(&mut self, focusable: bool) {
+        self.state.focusable = focusable;
+    }
+
     // Update `state.modifiers` if `event` has something different
     fn update_potentially_stale_modifiers(&mut self, event: &NSEvent) {
         let event_modifiers = event_mods(event);
@@ -957,6 +973,10 @@ impl WinitView {
     }
 
     fn mouse_click(&mut self, event: &NSEvent, button_state: ElementState) {
+        if !self.state.focusable {
+            NSApp().preventWindowOrdering();
+        }
+
         let button = mouse_button(event);
 
         self.update_potentially_stale_modifiers(event);

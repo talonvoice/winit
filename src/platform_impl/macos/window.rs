@@ -415,7 +415,7 @@ impl WinitWindow {
             None => (),
         }
 
-        let view = WinitView::new(&this, pl_attrs.accepts_first_mouse);
+        let view = WinitView::new(&this, pl_attrs.accepts_first_mouse, attrs.focusable);
 
         // The default value of `setWantsBestResolutionOpenGLSurface:` was `false` until
         // macos 10.14 and `true` after 10.15, we should set it to `YES` or `NO` to avoid
@@ -549,6 +549,8 @@ impl WinitWindow {
     pub fn set_focusable(&self, focusable: bool) {
         let mut shared_state_lock = self.lock_shared_state("set_focusable");
         shared_state_lock.focusable = focusable;
+        // TODO(madsmtm): Remove the need for this
+        unsafe { Id::from_shared(self.view()) }.set_focusable(focusable);
     }
 
     pub fn is_focusable(&self) -> Option<bool> {

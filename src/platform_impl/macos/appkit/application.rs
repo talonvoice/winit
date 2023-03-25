@@ -89,6 +89,9 @@ extern_methods!(
         #[sel(setAppearance:)]
         pub fn setAppearance(&self, appearance: Option<&NSAppearance>);
 
+        #[sel(preventWindowOrdering)]
+        pub fn preventWindowOrdering(&self);
+
         #[sel(run)]
         pub unsafe fn run(&self);
     }
