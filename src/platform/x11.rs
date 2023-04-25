@@ -102,6 +102,8 @@ pub trait WindowExtX11 {
     ///
     /// The pointer will become invalid when the [`Window`] is destroyed.
     fn xcb_connection(&self) -> Option<*mut raw::c_void>;
+
+    fn set_override_redirect(&self, value: bool);
 }
 
 impl WindowExtX11 for Window {
@@ -138,6 +140,14 @@ impl WindowExtX11 for Window {
             LinuxWindow::X(ref w) => Some(w.xcb_connection()),
             #[cfg(wayland_platform)]
             _ => None,
+        }
+    }
+
+    fn set_override_redirect(&self, value: bool) {
+        match self.window {
+            LinuxWindow::X(ref w) => w.set_override_redirect(value),
+            #[cfg(wayland_platform)]
+            _ => (),
         }
     }
 }

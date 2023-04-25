@@ -1339,6 +1339,16 @@ impl UnownedWindow {
     }
 
     #[inline]
+    pub fn set_override_redirect(&self, value: bool) {
+        unsafe {
+            let window_attributes = ffi::CWOverrideRedirect;
+            let mut swa: ffi::XSetWindowAttributes = mem::zeroed();
+            swa.override_redirect = value as c_int;
+            (self.xconn.xlib.XChangeWindowAttributes)(self.xconn.display, self.xwindow, window_attributes, &mut swa);
+        }
+    }
+
+    #[inline]
     pub fn set_cursor_icon(&self, cursor: CursorIcon) {
         let old_cursor = replace(&mut *self.cursor.lock().unwrap(), cursor);
         #[allow(clippy::mutex_atomic)]
