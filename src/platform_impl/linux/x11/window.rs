@@ -57,6 +57,7 @@ pub struct SharedState {
     pub base_size: Option<Size>,
     pub visibility: Visibility,
     pub has_focus: bool,
+    pub cursor_hittest: bool,
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -98,6 +99,7 @@ impl SharedState {
             resize_increments: None,
             base_size: None,
             has_focus: false,
+            cursor_hittest: true,
         })
     }
 }
@@ -1175,6 +1177,10 @@ impl UnownedWindow {
             self.xconn.flush_requests()
         }
         .expect("Failed to call `XResizeWindow`");
+        // cursor_hittest needs to be reapplied after window resize
+        if self.shared_state_lock().cursor_hittest {
+            self.set_cursor_hittest(true);
+        }
     }
 
     #[inline]
@@ -1482,6 +1488,7 @@ impl UnownedWindow {
             let size = self.inner_size();
             rectangles.push(ffi::XRectangle{ x: 0, y: 0, width: size.width as u16, height: size.height as u16 })
         }
+        self.shared_state_lock().cursor_hittest = hittest;
         unsafe {
             let region = (self.xconn.xfixes.XFixesCreateRegion)(self.xconn.display, rectangles.as_mut_ptr(), rectangles.len() as i32);
             (self.xconn.xfixes.XFixesSetWindowShapeRegion)(self.xconn.display, self.xwindow, shape_input, 0, 0, region);
