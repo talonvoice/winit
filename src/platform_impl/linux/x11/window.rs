@@ -1188,11 +1188,10 @@ impl UnownedWindow {
         let scale_factor = self.scale_factor();
         let size = size.to_physical::<u32>(scale_factor).into();
         if !self.shared_state_lock().is_resizable {
-            self.update_normal_hints(|normal_hints| {
+            let _ = self.update_normal_hints(|normal_hints| {
                 normal_hints.set_min_size(Some(size));
                 normal_hints.set_max_size(Some(size));
-            })
-            .expect("Failed to call `XSetWMNormalHints`");
+            });
         }
         self.set_inner_size_physical(size.0, size.1);
     }
@@ -1209,8 +1208,7 @@ impl UnownedWindow {
     }
 
     pub(crate) fn set_min_inner_size_physical(&self, dimensions: Option<(u32, u32)>) {
-        self.update_normal_hints(|normal_hints| normal_hints.set_min_size(dimensions))
-            .expect("Failed to call `XSetWMNormalHints`");
+        let _ = self.update_normal_hints(|normal_hints| normal_hints.set_min_size(dimensions));
     }
 
     #[inline]
@@ -1222,8 +1220,7 @@ impl UnownedWindow {
     }
 
     pub(crate) fn set_max_inner_size_physical(&self, dimensions: Option<(u32, u32)>) {
-        self.update_normal_hints(|normal_hints| normal_hints.set_max_size(dimensions))
-            .expect("Failed to call `XSetWMNormalHints`");
+        let _ = self.update_normal_hints(|normal_hints| normal_hints.set_max_size(dimensions));
     }
 
     #[inline]
@@ -1248,8 +1245,7 @@ impl UnownedWindow {
         self.shared_state_lock().resize_increments = increments;
         let physical_increments =
             increments.map(|increments| increments.to_physical::<u32>(self.scale_factor()).into());
-        self.update_normal_hints(|hints| hints.set_resize_increments(physical_increments))
-            .expect("Failed to call `XSetWMNormalHints`");
+        let _ = self.update_normal_hints(|hints| hints.set_resize_increments(physical_increments));
     }
 
     pub(crate) fn adjust_for_dpi(
@@ -1311,11 +1307,10 @@ impl UnownedWindow {
         let max_inner_size = max_size
             .map(|size| size.to_physical::<u32>(scale_factor))
             .map(Into::into);
-        self.update_normal_hints(|normal_hints| {
+        let _ = self.update_normal_hints(|normal_hints| {
             normal_hints.set_min_size(min_inner_size);
             normal_hints.set_max_size(max_inner_size);
-        })
-        .expect("Failed to call `XSetWMNormalHints`");
+        });
     }
 
     #[inline]
