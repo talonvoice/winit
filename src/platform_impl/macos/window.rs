@@ -213,6 +213,7 @@ declare_class!(
 #[derive(Debug, Default)]
 pub struct SharedState {
     pub resizable: bool,
+    pub focusable: bool,
     /// This field tracks the current fullscreen state of the window
     /// (as seen by `WindowDelegate`).
     pub(crate) fullscreen: Option<Fullscreen>,
@@ -367,6 +368,7 @@ impl WinitWindow {
 
             let state = SharedState {
                 resizable: attrs.resizable,
+                focusable: true,
                 maximized: attrs.maximized,
                 decorations: attrs.decorations,
                 ..Default::default()
@@ -539,7 +541,7 @@ impl WinitWindow {
         // state, since otherwise we'll briefly see the window at normal size
         // before it transitions.
         if attrs.visible {
-            if attrs.active {
+            if attrs.active && attrs.focusable {
                 // Tightly linked with `app_state::window_activation_hack`
                 this.makeKeyAndOrderFront(None);
             } else {
@@ -599,24 +601,16 @@ impl WinitWindow {
     }
 
     pub fn set_visible(&self, visible: bool) {
-        match visible {
-            true => self.makeKeyAndOrderFront(None),
-            false => self.orderOut(None),
+        if visible && self.is_focusable() == Some(true) {
+            self.makeKeyAndOrderFront(None);
+        } else {
+            self.orderOut(None);
         }
     }
 
     #[inline]
     pub fn is_visible(&self) -> Option<bool> {
         Some(self.isVisible())
-    }
-
-    pub fn set_focusable(&self, focusable: bool) {
-        warn!("`Window::set_focusable` is ignored on macOS");
-    }
-
-    pub fn is_focusable(&self) -> Option<bool> {
-        warn!("`Window::is_focusable` is ignored on macOS");
-        None
     }
 
     pub fn request_redraw(&self) {
@@ -788,6 +782,18 @@ impl WinitWindow {
     #[inline]
     pub fn is_resizable(&self) -> bool {
         self.isResizable()
+    }
+
+    #[inline]
+    pub fn set_focusable(&self, focusable: bool) {
+        let mut shared_state_lock = self.lock_shared_state("set_focusable");
+        shared_state_lock.focusable = focusable;
+    }
+
+    #[inline]
+    pub fn is_focusable(&self) -> Option<bool> {
+        let shared_state_lock = self.lock_shared_state("is_focusable");
+        Some(shared_state_lock.focusable)
     }
 
     #[inline]
