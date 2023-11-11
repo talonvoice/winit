@@ -9,7 +9,7 @@ use tracing::{debug, info, warn};
 use x11rb::connection::Connection;
 use x11rb::properties::{WmHints, WmSizeHints, WmSizeHintsSpecification};
 use x11rb::protocol::shape::{ConnectionExt as ShapeExt, SK, SO};
-use x11rb::protocol::xproto::{self, ClipOrdering, ConnectionExt as _, Rectangle};
+use x11rb::protocol::xproto::{self, ClipOrdering, ConnectionExt as _, Rectangle, ChangeWindowAttributesAux};
 use x11rb::protocol::{randr, xinput};
 
 use crate::cursor::{Cursor, CustomCursor as RootCustomCursor};
@@ -1486,6 +1486,15 @@ impl UnownedWindow {
             Cursor::Custom(RootCustomCursor { inner: PlatformCustomCursor::Wayland(_) }) => {
                 tracing::error!("passed a Wayland cursor to X11 backend")
             },
+        }
+    }
+
+    #[inline]
+    pub fn set_override_redirect(&self, value: bool) {
+        let mut swa = ChangeWindowAttributesAux::default();
+        swa.override_redirect = Some(value as u32);
+        if let Ok(cookie) = self.xconn.xcb_connection().change_window_attributes(self.xwindow, &swa) {
+            cookie.ignore_error();
         }
     }
 
