@@ -82,9 +82,19 @@ impl<T> EventLoopBuilderExtX11 for EventLoopBuilder<T> {
 }
 
 /// Additional methods on [`Window`] that are specific to X11.
-pub trait WindowExtX11 {}
+pub trait WindowExtX11 {
+    fn set_override_redirect(&self, value: bool);
+}
 
-impl WindowExtX11 for Window {}
+impl WindowExtX11 for Window {
+    fn set_override_redirect(&self, value: bool) {
+        match self.window {
+            LinuxWindow::X(ref w) => w.set_override_redirect(value),
+            #[cfg(wayland_platform)]
+            _ => (),
+        }
+    }
+}
 
 /// Additional methods on [`WindowBuilder`] that are specific to X11.
 pub trait WindowBuilderExtX11 {

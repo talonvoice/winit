@@ -1543,6 +1543,15 @@ impl UnownedWindow {
     }
 
     #[inline]
+    pub fn set_override_redirect(&self, value: bool) {
+        unsafe {
+            let mut swa = ChangeWindowAttributesAux::default();
+            swap.override_redirect = Some(value as c_int);
+            self.xconn.change_window_attributes(self.xwindow, swa);
+        }
+    }
+
+    #[inline]
     pub fn set_cursor_icon(&self, cursor: CursorIcon) {
         let old_cursor = replace(&mut *self.cursor.lock().unwrap(), cursor);
         #[allow(clippy::mutex_atomic)]
