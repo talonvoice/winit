@@ -45,6 +45,7 @@ pub struct SharedState {
     pub inner_position: Option<(i32, i32)>,
     pub inner_position_rel_parent: Option<(i32, i32)>,
     pub is_resizable: bool,
+    pub is_focusable: bool,
     pub is_decorated: bool,
     pub last_monitor: X11MonitorHandle,
     pub dpi_adjusted: Option<(u32, u32)>,
@@ -84,6 +85,7 @@ impl SharedState {
             visibility,
 
             is_resizable: window_attributes.resizable,
+            is_focusable: true,
             is_decorated: window_attributes.decorations,
             cursor_pos: None,
             size: None,
@@ -1161,12 +1163,16 @@ impl UnownedWindow {
     }
 
     pub fn set_focusable(&self, focusable: bool) {
-        warn!("`Window::set_focusable` is ignored on X11");
+        let mut hints = WmHints::new();
+        hints.input = Some(focusable);
+        if let Ok(cookie) = hints.set(self.xconn.xcb_connection(), self.xwindow) {
+            cookie.ignore_error();
+        }
+        self.shared_state_lock().is_focusable = focusable;
     }
 
     pub fn is_focusable(&self) -> Option<bool> {
-        warn!("`Window::is_focusable` is ignored on X11");
-        None
+        Some(self.shared_state_lock().is_focusable)
     }
 
     fn update_cached_frame_extents(&self) {
