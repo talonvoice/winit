@@ -975,7 +975,8 @@ impl Window {
     /// - **Windows:** Supported.
     #[inline]
     pub fn set_focusable(&self, focusable: bool) {
-        self.window.set_focusable(focusable);
+        self.window
+            .maybe_queue_on_main(move |w| w.set_focusable(focusable))
     }
 
     /// Gets whether the window can be focused or not.
@@ -983,7 +984,7 @@ impl Window {
     /// - **Windows:** Supported.
     #[inline]
     pub fn is_focusable(&self) -> Option<bool> {
-        self.window.is_focusable()
+        self.window.maybe_wait_on_main(|w| w.is_focusable())
     }
 
     /// Sets whether the window is resizable or not.
