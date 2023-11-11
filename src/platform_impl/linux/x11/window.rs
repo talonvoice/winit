@@ -1131,7 +1131,7 @@ impl UnownedWindow {
     pub(crate) fn set_position_physical(&self, x: i32, y: i32) {
         self.set_position_inner(x, y)
             .flush()
-            .expect("Failed to call `XMoveWindow`");
+            .expect_then_ignore_error("Failed to call `XMoveWindow`");
     }
 
     #[inline]
