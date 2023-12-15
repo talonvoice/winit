@@ -89,7 +89,7 @@ pub trait WindowExtX11 {
 impl WindowExtX11 for Window {
     fn set_override_redirect(&self, value: bool) {
         match self.window {
-            LinuxWindow::X(ref w) => w.set_override_redirect(value),
+            crate::platform_impl::Window::X(ref w) => w.set_override_redirect(value),
             #[cfg(wayland_platform)]
             _ => (),
         }

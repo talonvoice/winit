@@ -15,7 +15,7 @@ use x11rb::{
         shape::SK,
         xfixes::{ConnectionExt, RegionWrapper},
         xinput,
-        xproto::{self, ConnectionExt as _, Rectangle},
+        xproto::{self, ConnectionExt as _, Rectangle, ChangeWindowAttributesAux},
     },
 };
 
@@ -1227,9 +1227,11 @@ impl UnownedWindow {
     }
 
     pub fn set_focusable(&self, focusable: bool) {
-        let hints = WmHints::new();
+        let mut hints = WmHints::new();
         hints.input = Some(focusable);
-        hints.set(&self.xconn, self.xwindow).ignore_error();
+        if let Ok(cookie) = hints.set(self.xconn.xcb_connection(), self.xwindow) {
+            cookie.ignore_error();
+        }
         self.shared_state_lock().is_focusable = focusable;
     }
 
@@ -1548,10 +1550,10 @@ impl UnownedWindow {
 
     #[inline]
     pub fn set_override_redirect(&self, value: bool) {
-        unsafe {
-            let mut swa = ChangeWindowAttributesAux::default();
-            swap.override_redirect = Some(value as c_int);
-            self.xconn.change_window_attributes(self.xwindow, swa);
+        let mut swa = ChangeWindowAttributesAux::default();
+        swa.override_redirect = Some(value as u32);
+        if let Ok(cookie) = self.xconn.xcb_connection().change_window_attributes(self.xwindow, &swa) {
+            cookie.ignore_error();
         }
     }
 
