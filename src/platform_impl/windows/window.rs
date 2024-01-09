@@ -161,7 +161,7 @@ impl Window {
         let window_state = Arc::clone(&self.window_state);
         self.thread_executor.execute_in_thread(move || {
             let _ = &window;
-            WindowState::set_window_flags(window_state.lock().unwrap(), window.0, |f| {
+            WindowState::set_window_flags(window_state.lock().unwrap(), window, |f| {
                 f.set(WindowFlags::FOCUSABLE, focusable)
             });
         });
