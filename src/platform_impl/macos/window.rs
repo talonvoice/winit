@@ -368,7 +368,7 @@ impl WinitWindow {
 
             let state = SharedState {
                 resizable: attrs.resizable,
-                focusable: true,
+                focusable: attrs.focusable,
                 maximized: attrs.maximized,
                 decorations: attrs.decorations,
                 ..Default::default()
@@ -601,8 +601,12 @@ impl WinitWindow {
     }
 
     pub fn set_visible(&self, visible: bool) {
-        if visible && self.is_focusable() == Some(true) {
-            self.makeKeyAndOrderFront(None);
+        if visible {
+            if self.is_focusable() == Some(true) {
+                self.makeKeyAndOrderFront(None);
+            } else {
+                self.orderFront(None);
+            }
         } else {
             self.orderOut(None);
         }
