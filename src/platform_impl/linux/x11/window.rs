@@ -8,9 +8,8 @@ use std::{cmp, env};
 use tracing::{debug, info, warn};
 use x11rb::connection::Connection;
 use x11rb::properties::{WmHints, WmSizeHints, WmSizeHintsSpecification};
-use x11rb::protocol::shape::SK;
-use x11rb::protocol::xfixes::{ConnectionExt, RegionWrapper};
-use x11rb::protocol::xproto::{self, ConnectionExt as _, Rectangle, ChangeWindowAttributesAux};
+use x11rb::protocol::shape::{ConnectionExt as ShapeExt, SK, SO};
+use x11rb::protocol::xproto::{self, ConnectionExt as _, ClipOrdering, Rectangle, ChangeWindowAttributesAux};
 use x11rb::protocol::{randr, xinput};
 
 use crate::cursor::{Cursor, CustomCursor as RootCustomCursor};
@@ -1646,22 +1645,36 @@ impl UnownedWindow {
 
     #[inline]
     pub fn set_cursor_hittest(&self, hittest: bool) -> Result<(), ExternalError> {
-        let mut rectangles: Vec<Rectangle> = Vec::new();
-        if hittest {
+        // Implement cursor hittest for X11 by either setting an empty or full window input shape.
+
+        // In X11, every window has two "shapes":
+        //   • Bounding shape: defines the visible outline of the window.
+        //   • Input shape: defines the region of the window that receives pointer/keyboard events.
+        // If the input shape is the full window rectangle, the window behaves normally.
+        // If the input shape is empty, the window is completely click‑through.
+        // Here, we implement hit test by mapping `hittest = true` to "restore a full input shape"
+        // and `hittest = false` to "clear the input shape" (empty list of rectangles).
+
+        // Build the rectangle list that will be used to set the input shape
+        let rects: Vec<Rectangle> = if hittest {
             let size = self.inner_size();
-            rectangles.push(Rectangle {
-                x: 0,
-                y: 0,
-                width: size.width as u16,
-                height: size.height as u16,
-            })
-        }
-        let region = RegionWrapper::create_region(self.xconn.xcb_connection(), &rectangles)
-            .map_err(|_e| ExternalError::Ignored)?;
+            vec![Rectangle { x: 0, y: 0, width: size.width as u16, height: size.height as u16 }]
+        } else {
+            Vec::new() // empty → click-through
+        };
         self.xconn
             .xcb_connection()
-            .xfixes_set_window_shape_region(self.xwindow, SK::INPUT, 0, 0, region.region())
+            .shape_rectangles(
+                SO::SET,
+                SK::INPUT,
+                ClipOrdering::UNSORTED,
+                self.xwindow,
+                0,
+                0,
+                &rects,
+            )
             .map_err(|_e| ExternalError::Ignored)?;
+
         self.shared_state_lock().cursor_hittest = Some(hittest);
         Ok(())
     }
